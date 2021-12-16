@@ -16,7 +16,18 @@ pub mod pallet {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 	}
 
-    #[pallet::event]   // <-- Step 3. code block will replace this.
+	// Pallets use events to inform users when important changes are made.
+	// Event documentation should end with an array that provides descriptive names for parameters.
+	// https://docs.substrate.io/v3/runtime/events-and-errors
+	#[pallet::event]
+	#[pallet::generate_deposit(pub(super) fn deposit_event)]
+	pub enum Event<T: Config> {
+		/// Event emitted when a proof has been claimed. [who, claim]
+		ClaimCreated(T::AccountId, Vec<u8>),
+		/// Event emitted when a claim is revoked by the owner. [who, claim]
+		ClaimRevoked(T::AccountId, Vec<u8>),
+	}
+
     #[pallet::error]   // <-- Step 4. code block will replace this.
     #[pallet::pallet]
     #[pallet::generate_store(pub(super) trait Store)]
