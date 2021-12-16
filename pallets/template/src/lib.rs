@@ -9,7 +9,13 @@ pub mod pallet {
     use frame_system::pallet_prelude::*;
     use sp_std::vec::Vec; // Step 3.1 will include this in `Cargo.toml`
 
-    #[pallet::config]  // <-- Step 2. code block will replace this.
+	/// Configure the pallet by specifying the parameters and types on which it depends.
+	#[pallet::config]
+	pub trait Config: frame_system::Config {
+		/// Because this pallet emits events, it depends on the runtime's definition of an event.
+		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+	}
+
     #[pallet::event]   // <-- Step 3. code block will replace this.
     #[pallet::error]   // <-- Step 4. code block will replace this.
     #[pallet::pallet]
