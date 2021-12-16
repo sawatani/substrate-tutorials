@@ -48,5 +48,55 @@ pub mod pallet {
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {}
-	#[pallet::call]   // <-- Step 6. code block will replace this.
+	// Dispatchable functions allow users to interact with the pallet and invoke state changes.
+	// These functions materialize as "extrinsics", which are often compared to transactions.
+	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
+	#[pallet::call]
+	impl<T: Config> Pallet<T> {
+		#[pallet::weight(1_000)]
+		pub fn create_claim(origin: OriginFor<T>, proof: Vec<u8>) -> DispatchResult {
+			// Check that the extrinsic was signed and get the signer.
+			// This function will return an error if the extrinsic is not signed.
+			// https://docs.substrate.io/v3/runtime/origins
+			let sender = ensure_signed(origin)?;
+
+			// Verify that the specified proof has not already been claimed.
+			ensure!(!Proofs::<T>::contains_key(&proof), Error::<T>::ProofAlreadyClaimed);
+
+			// Get the block number from the FRAME System pallet.
+			let current_block = <frame_system::Pallet<T>>::block_number();
+
+			// Store the proof with the sender and block number.
+			Proofs::<T>::insert(&proof, (&sender, current_block));
+
+			// Emit an event that the claim was created.
+			Self::deposit_event(Event::ClaimCreated(sender, proof));
+
+			Ok(())
+		}
+
+		#[pallet::weight(10_000)]
+		pub fn revoke_claim(origin: OriginFor<T>, proof: Vec<u8>) -> DispatchResult {
+			// Check that the extrinsic was signed and get the signer.
+			// This function will return an error if the extrinsic is not signed.
+			// https://docs.substrate.io/v3/runtime/origins
+			let sender = ensure_signed(origin)?;
+
+			// Verify that the specified proof has been claimed.
+			ensure!(Proofs::<T>::contains_key(&proof), Error::<T>::NoSuchProof);
+
+			// Get owner of the claim.
+			let (owner, _) = Proofs::<T>::get(&proof);
+
+			// Verify that sender of the current call is the claim owner.
+			ensure!(sender == owner, Error::<T>::NotProofOwner);
+
+			// Remove claim from storage.
+			Proofs::<T>::remove(&proof);
+
+			// Emit an event that the claim was erased.
+			Self::deposit_event(Event::ClaimRevoked(sender, proof));
+			Ok(())
+		}
+	}
 }
