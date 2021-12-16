@@ -28,7 +28,16 @@ pub mod pallet {
 		ClaimRevoked(T::AccountId, Vec<u8>),
 	}
 
-    #[pallet::error]   // <-- Step 4. code block will replace this.
+	#[pallet::error]
+	pub enum Error<T> {
+		/// The proof has already been claimed.
+		ProofAlreadyClaimed,
+		/// The proof does not exist, so it cannot be revoked.
+		NoSuchProof,
+		/// The proof is claimed by another account, so caller can't revoke it.
+		NotProofOwner,
+	}
+
     #[pallet::pallet]
     #[pallet::generate_store(pub(super) trait Store)]
     #[pallet::generate_storage_info]
