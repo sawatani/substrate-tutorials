@@ -43,7 +43,9 @@ pub mod pallet {
     #[pallet::generate_storage_info]
     pub struct Pallet<T>(_);
 
-    #[pallet::storage] // <-- Step 5. code block will replace this.
+	#[pallet::storage]
+	pub(super) type Proofs<T: Config> = StorageMap<_, Blake2_128Concat, Vec<u8>, (T::AccountId, T::BlockNumber), ValueQuery>;
+
     #[pallet::hooks]
     impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {}
     #[pallet::call]   // <-- Step 6. code block will replace this.
